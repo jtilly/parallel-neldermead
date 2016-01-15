@@ -6,11 +6,11 @@ NelderMead.hpp. An example test program is contained in NelderMead_Driver.cpp.
 The test program may be built using `make serial`. The correct usage is as 
 follows.
 
-./NelderTest <problem size>
+./NelderTest.out <problem size>
 
 For example, to run a problem size of 5 points, the command would be as follows.
 
-./NelderTest 5
+./NelderTest.out 5
 
 The second is our parallel distributed memory implementation contained in 
 DistParNelderMead.cpp and DistParNelderMead.hpp. An example test program is 
@@ -20,13 +20,13 @@ The test program may be built using `make parallel`, though note that the
 required MPI libraries must be installed. The correct usage is as 
 follows.
 
-./DistParNelderTest <problem size> <points per iter> <max iterations (optional)>
+./DistParNelderTest.out <problem size> <points per iter> <max iterations (optional)>
 
 For example, to run on the SDSC Triton using two processors, on a problem size 
 of 8, with two points updated on each processor per iteration, the command would
 be as follows.
 
-mpirun -machinefile $PBS_NODEFILE -np 2 ./DistParNelderTest 8 2
+mpirun -machinefile $PBS_NODEFILE -np 2 ./DistParNelderTest.out 8 2
 
 For additional customizations please consult the header files, as we have done
 our best to comment each method. If something is not clear, feel free to contact
