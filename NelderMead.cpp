@@ -89,31 +89,37 @@ double* NelderMead::solve(int max_iter) {
 		}*/
 		reflection(); //Compute reflection
 		fAR = obj_function(AR, dimension); //Evaluate reflection
-		//Case 1
-		if (fAR < obj_function_results[indices[0]]) {
+		// Case 1: 
+		// reflection is better than the best
+		if (fAR < best) {
 			expansion();
 			fAE = obj_function(AE, dimension); //Evaluate expansion
-			//If expansion is better, use that
-			if (fAE < obj_function_results[indices[0]]) {
+
+			// Can we accept the expanded point?
+			// If expansion is better, use that
+			if (fAE < fAR) {
 				memmove(&SIMPLEX(dimension, 0), AE, dimension * sizeof(double));
 				obj_function_results[indices[dimension]] = fAE;
 			} else { //otherwise use reflection
 				memmove(&SIMPLEX(dimension, 0), AR, dimension * sizeof(double));
 				obj_function_results[indices[dimension]] = fAR;
 			}
-			//Case 2
-		} else if (fAR < obj_function_results[indices[dimension - 1]]) {
+			//Case 2: [ fAR > best & fAR < the second worst ]
+			// --> accept the point
+		} else if (fAR <= obj_function_results[indices[dimension - 1]]) {
 			memmove(&SIMPLEX(dimension, 0), AR, dimension * sizeof(double));
 			obj_function_results[indices[dimension]] = fAR;
 			//Case 3
 		} else {
+			// %inside contraction
 			contraction();
 			fAC = obj_function(AC, dimension); //Evaluate contraction
 			//If Contraction is better, use it
-			if (fAC < obj_function_results[indices[dimension]]) {
+			if (fAC < worst) {
 				memmove(&SIMPLEX(dimension, 0), AC, dimension * sizeof(double));
 				obj_function_results[indices[dimension]] = fAC;
 			} else { //Otherwise, minimize
+				// "shrink"
 				minimize();
 				//re-evaluate for next iteration
 				for (int i = 0; i < dimension + 1; i++) {
@@ -127,6 +133,7 @@ double* NelderMead::solve(int max_iter) {
 		sort_simplex(); //Sort the simplex
 		//Find the new best
 		best = obj_function_results[indices[0]];
+		worst = obj_function_results[indices[dimension]];
 		iter++;
 	}
 	std::cout << iter << " total iterations\n.";
@@ -143,7 +150,7 @@ void NelderMead::reflection() {
 		}
 	}
 	for (int i = 0; i < dimension; i++) {
-		M[i] /= (dimension + 1); //Divide from earlier, then compute
+		M[i] /= (dimension); //Divide from earlier, then compute
 		AR[i] = M[i] + alpha * (M[i] - SIMPLEX(dimension,i));
 	}
 }

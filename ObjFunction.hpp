@@ -18,7 +18,7 @@
 double objFunction1(double *points, int dimension) {
 	double sum = 0;
 	for (int i = 0; i < dimension; ++i) {
-		sum += std::pow(points[i], 2) / dimension;
+		sum += std::pow(points[i]-2, 2) / dimension;
 	}
 	return sum;
 }
@@ -26,7 +26,7 @@ double objFunction1(double *points, int dimension) {
 double objFunction2(double *points, int dimension) {
 	double sum = 0;
 	for (int i = 0; i < dimension; ++i) {
-		sum += std::abs(points[i])/ dimension;
+		sum += std::abs(points[i]-2)/ dimension;
 	}
 	return sum;
 }
