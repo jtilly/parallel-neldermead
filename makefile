@@ -3,6 +3,9 @@ CFLAGS = $(USERFLAGS)
 serial: NelderMead.o
 	g++ $(CFLAGS) -o NelderTest.out NelderMead_Driver.cpp NelderMead.o
 
+tests: NelderMead.o
+		g++ $(CFLAGS) -o tests.out tests.cpp NelderMead.o
+
 parallel: DistParNelderMead.o
 	mpicxx $(CFLAGS) -o DistParNelderTest.out DistParNelderMead_Driver.cpp DistParNelderMead.o
 

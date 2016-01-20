@@ -74,10 +74,12 @@ NelderMead::~NelderMead() {
 }
 
 double* NelderMead::solve(int max_iter) {
-    //Compute objective function
+
+    // Compute objective function
     for (int i = 0; i < dimension + 1; i++) {
         obj_function_results[i] = obj_function(&SIMPLEX(i,0), dimension);
     }
+
     sort_simplex(); //Sort the simplex
     double best = obj_function_results[indices[0]];
     int iter = 0;
@@ -92,7 +94,6 @@ double* NelderMead::solve(int max_iter) {
         reflection();
         fAR = obj_function(AR, dimension);
 
-
         if(best <= fAR && fAR <= obj_function_results[indices[dimension - 1]]) {
             // accept reflection point
             memmove(&SIMPLEX(dimension, 0), AR, dimension * sizeof(double));
@@ -103,21 +104,23 @@ double* NelderMead::solve(int max_iter) {
             fAE = obj_function(AE, dimension);
             if(fAE < fAR) {
                 // accept expansion point
-                memmove(&SIMPLEX(dimension, 0), AR, dimension * sizeof(double));
-                obj_function_results[indices[dimension]] = fAR;
+                memmove(&SIMPLEX(dimension, 0), AE, dimension * sizeof(double));
+                obj_function_results[indices[dimension]] = fAE;
             } else {
-                // accept reflection point
+                // eventual accept reflection point
                 memmove(&SIMPLEX(dimension, 0), AR, dimension * sizeof(double));
                 obj_function_results[indices[dimension]] = fAR;
             }
         } else if(obj_function_results[indices[dimension - 1]] <=fAR && fAR < worst) {
+            // do outside contraction
             outsidecontraction();
             fAC = obj_function(AC, dimension);
-
             if(fAC <= fAR) {
+            	// accept outside contraction point
                 memmove(&SIMPLEX(dimension, 0), AC, dimension * sizeof(double));
                 obj_function_results[indices[dimension]] = fAC;
             } else {
+            	// shrink
                 minimize();
                 //re-evaluate for next iteration
                 for (int i = 0; i < dimension + 1; i++) {
@@ -125,12 +128,15 @@ double* NelderMead::solve(int max_iter) {
                 }
             }
         } else {
+            // do inside contraction
             insidecontraction();
             fAC = obj_function(AC, dimension);
             if(fAC < worst) {
+            	// accept inside contraction point
                 memmove(&SIMPLEX(dimension, 0), AC, dimension * sizeof(double));
                 obj_function_results[indices[dimension]] = fAC;
             } else {
+            	// shrink
                 minimize();
                 //re-evaluate for next iteration
                 for (int i = 0; i < dimension + 1; i++) {
@@ -138,14 +144,19 @@ double* NelderMead::solve(int max_iter) {
                 }
             }
         }
-        //Resort the indices, as they might be out of order now
+
+		// Resort the indices, as they might be out of order now
         sort_simplex(); //Sort the simplex
-        //Find the new best
+
+		// Find the new best
         best = obj_function_results[indices[0]];
+
+        // Find the new worst
         worst = obj_function_results[indices[dimension]];
-        iter++;
+
+		iter++;
     }
-    std::cout << iter << " total iterations\n.";
+    std::cout << iter << " total iterations\n";
     return &SIMPLEX(0,0);
 }
 
@@ -168,6 +179,7 @@ void NelderMead::reflection() {
         AR[i] = (1 + rho) * M[i] - rho * SIMPLEX(dimension,i);
     }
 }
+
 void NelderMead::expansion() {
     for (int i = 0; i < dimension; i++) {
         AE[i] = (1 + rho * xi) * M[i] - rho * xi * SIMPLEX(dimension,i);
@@ -208,7 +220,7 @@ void NelderMead::daxpy(double *result, double scalar1, double *a,
     }
 }
 
-//Debugging purposes
+// debugging purposes
 void NelderMead::print_simplex() {
     for (int i = 0; i < dimension + 1; i++) {
         for (int j = 0; j < dimension; j++) {

@@ -9,7 +9,7 @@
 #define NELDERMEAD_HPP_
 #define SIMPLEX(i,j) simplex[((indices[(i)])*dimension) + (j) ]
 #define RHO (1.0) // RHO > 0
-#define XI (2)    // XI  > max(RHO, 1)
+#define XI (2.0)    // XI  > max(RHO, 1)
 #define GAM (0.5) // 0 < GAM < 1
 #define SIG (0.5) // 0 < SIG < 1
 

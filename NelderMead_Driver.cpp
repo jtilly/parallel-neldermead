@@ -20,9 +20,9 @@ int main(int argc, char **argv) {
 	int prob_size = atoi(argv[1]);
 	double *guess = new double[prob_size];
 	for (int i = 0; i < prob_size; i++)
-		guess[i] = 1.0;
+		guess[i] = -1.0;
 
-	NelderMead *solver = new NelderMead(guess, 1.0, prob_size, objFunction1);
+	NelderMead *solver = new NelderMead(guess, 1.0, prob_size, himmelblau);
 
 	double *answer = solver->solve(-1);
 	for (int i = 0; i < prob_size - 1; i++) {
