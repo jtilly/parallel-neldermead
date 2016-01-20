@@ -99,7 +99,8 @@ double* DistParNelderMead::solve(int max_iterations) {
 	while (best > 1e-6 && (max_iterations <= 0 || iter * size < max_iterations)) {
 
 		current_point = points_on_proc - (iter % points_per_iter) - 1;
-
+		updated = 0;
+		
 		// compute centroid
 		if (iter % points_per_iter == 0) {
 			centroid();
@@ -143,10 +144,6 @@ double* DistParNelderMead::solve(int max_iterations) {
 	            // accept outside contraction point
 	            update(AC, current_point);
 	            obj_function_results[indices[current_point]] = fAC;
-	        } else {
-	            // shrink
-	            memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
-	            obj_function_results[indices[current_point]] = fAR;
 	        }
 	    } else {
 	        // do inside contraction
@@ -156,10 +153,6 @@ double* DistParNelderMead::solve(int max_iterations) {
 	            // accept inside contraction point
 	            update(AC, current_point);
 	            obj_function_results[indices[current_point]] = fAC;
-	        } else {
-	            // shrink
-	            memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
-	            obj_function_results[indices[current_point]] = fAR;
 	        }
 	    }
 
