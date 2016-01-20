@@ -25,7 +25,7 @@ DistParNelderMead::DistParNelderMead(int dimension,
 	for (int i = 0; i < dimension; i++)
 		guess[i] = 1.0;
 	init(guess, 1.0, dimension, obj_function, rank, size, points_per_iter);
-	delete guess;
+	delete[] guess;
 }
 
 void DistParNelderMead::init(double *guess, double step, int dimension,
@@ -34,9 +34,15 @@ void DistParNelderMead::init(double *guess, double step, int dimension,
 
 	/* Determine how many points are on the given processor, and their global
 	 * indices. Based off this index update with the provided step size. */
+
+	// points per processor (this "rounds" down)
 	points_on_proc = (dimension + 1) / size;
-	if ((dimension + 1) % size < rank)
+
+	// assign remainder to ranks 0, 1, 2, ...
+	if ((dimension + 1) % size > rank) {
 		points_on_proc++;
+	}
+
 	int globalFirstIndex = rank * ((dimension + 1) / size)
 			+ std::min((dimension + 1) % size, rank);
 
@@ -70,13 +76,13 @@ void DistParNelderMead::init(double *guess, double step, int dimension,
 }
 
 DistParNelderMead::~DistParNelderMead() {
-	delete indices;
-	delete simplex;
-	delete M;
-	delete obj_function_results;
-	delete AR;
-	delete AE;
-	delete AC;
+	delete[] indices;
+	delete[] simplex;
+	delete[] M;
+	delete[] obj_function_results;
+	delete[] AR;
+	delete[] AE;
+	delete[] AC;
 }
 
 double* DistParNelderMead::solve(int max_iterations) {
@@ -103,11 +109,11 @@ double* DistParNelderMead::solve(int max_iterations) {
 	    reflection();
 	    fAR = obj_function(AR, dimension);
 
-	    if(best <= fAR && fAR <= obj_function_results[indices[current_point - 1]]) {
+	    if(obj_function_results[indices[0]] <= fAR && fAR <= obj_function_results[indices[current_point - 1]]) {
 	        // accept reflection point
 	        update(AR, current_point);
 	        obj_function_results[indices[current_point]] = fAR;
-	    } else if( fAR < best ) {
+	    } else if(fAR < obj_function_results[indices[0]]) {
 	        // test for expansion
 	        expansion();
 	        fAE = obj_function(AE, dimension);
@@ -206,7 +212,7 @@ void DistParNelderMead::centroid() {
 		}
 	}
 	for (int i = 0; i < dimension; i++) {
-		M[i] /= (dimension + size - size * points_per_iter); //Divide from earlier, then compute
+		M[i] /= (dimension + 1 - size * points_per_iter); //Divide from earlier, then compute
 	}
 	//Reduce into AR, then swap pointers.
 	MPI_Allreduce(M, AR, dimension, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
@@ -261,8 +267,7 @@ void DistParNelderMead::minimize() {
 	double *global_bestPoint = AC; // AC is currently unusued unused memory
 	global_best(global_bestPoint);
 	for (int i = 0; i < points_on_proc; i++) {
-		daxpy(&SIMPLEX(i, 0), sig, global_bestPoint, (1.0 - sig), &SIMPLEX(i, 0),
-				dimension);
+		daxpy(&SIMPLEX(i, 0), sig, global_bestPoint, (1.0 - sig), &SIMPLEX(i, 0), dimension);
 	}
 
 }
@@ -287,6 +292,5 @@ void DistParNelderMead::print_simplex() {
 }
 
 void DistParNelderMead::sort_simplex() {
-	std::sort(indices, indices + points_on_proc,
-			IndexSorter(obj_function_results));
+	std::sort(indices, indices + points_on_proc, IndexSorter(obj_function_results));
 }
