@@ -105,15 +105,24 @@ double* DistParNelderMead::solve(int max_iterations) {
 			centroid();
 		}
 
+		std::cout << "Centroid\n";
+		for(int i = 0; i<dimension; i++) {
+			std::cout << M[i] << " ";
+		}
+		std::cout << "\n";
+
+		std::cout << "Simplex\n";
+		print_simplex();
+
 	    // compute reflection and store function value in fAR
 	    reflection();
 	    fAR = obj_function(AR, dimension);
 
-	    if(obj_function_results[indices[0]] <= fAR && fAR <= obj_function_results[indices[current_point - 1]]) {
+	    if(best <= fAR && fAR <= obj_function_results[indices[current_point - 1]]) {
 	        // accept reflection point
 	        update(AR, current_point);
 	        obj_function_results[indices[current_point]] = fAR;
-	    } else if(fAR < obj_function_results[indices[0]]) {
+	    } else if(fAR < best) {
 	        // test for expansion
 	        expansion();
 	        fAE = obj_function(AE, dimension);
@@ -203,8 +212,10 @@ void DistParNelderMead::update(double *vector, int index) {
 }
 
 void DistParNelderMead::centroid() {
-	for (int i = 0; i < dimension; i++)
+	for (int i = 0; i < dimension; i++) {
 		M[i] = 0.0;
+	}
+
 	for (int i = 0; i < points_on_proc - points_per_iter; i++) {
 		for (int j = 0; j < dimension; j++) {
 			M[j] += SIMPLEX(i, j);
