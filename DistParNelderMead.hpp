@@ -10,10 +10,10 @@
 #ifndef NELDERMEAD_HPP_
 #define NELDERMEAD_HPP_
 #define SIMPLEX(i,j) simplex[((indices[(i)])*dimension) + (j) ]
-#define ALPHA (1.0)
-#define BETA (.5)
-#define GAMMA (1.0)
-#define TAU (.5)
+#define RHO (1.0) // RHO > 0
+#define XI (2.0)    // XI  > max(RHO, 1)
+#define GAM (0.5) // 0 < GAM < 1
+#define SIG (0.5) // 0 < SIG < 1
 class DistParNelderMead {
 public:
 	/**
@@ -47,15 +47,15 @@ public:
 	 * max_iterations, whichever comes first.
 	 */
 	double* solve(int max_iterations);
-	//Set alpha, otherwise assumed to be ALPHA
-	void setAlpha(double alpha);
-	//Set beta, otherwise assumed BETA
-	void setBeta(double beta);
-	//Set gamma, otherwise assumed GAMMA
-	void setGamma(double gamma);
-	//Set tau, otherwise assumed to be TAU
-	void setTau(double tau);
-	//Set minimimum improvement to do restart after some number of iterations
+	// Set rho, otherwise assumed to be RHO
+	void set_rho(double rho);
+	// Set xi, otherwise assumed XI
+	void set_xi(double xi);
+	// Set gam, otherwise assumed GAM
+	void set_gam(double gam);
+	// Set sig, otherwise assumed to be SIG
+	void set_sig(double sig);
+	// Set minimimum improvement to do restart after some number of iterations
 	void setRestartCriterion(int iterations, double improvement);
 
 private:
@@ -65,7 +65,8 @@ private:
 	void centroid();
 	void reflection();
 	void expansion();
-	void contraction();
+	void outsidecontraction();
+	void insidecontraction();
 	void global_best(double *global_best);
 	void minimize();
 	void daxpy(double *result, double scalar1, double *a, double scalar2,
@@ -75,7 +76,7 @@ private:
 	void update(double *vector, int index);
 	double *simplex, *M, *AR, *AE, *AC;
 	double *obj_function_results;
-	double alpha, beta, gamma, tau, fAR, fAE, fAC, best;
+	double rho, xi, gam, sig, fAR, fAE, fAC, best;
 	int *indices;
 	int dimension, points_on_proc;
 	int rank, size, points_per_iter, current_point;

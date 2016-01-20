@@ -1,8 +1,8 @@
 /*
  * NelderMead_Driver.cpp
  *
- *  Created on: May 10, 2011
- *      Author: kyleklein
+ * Based on the implementations by Kyle Klein and Jeff Borggaard.
+ *
  */
 
 #include <cmath>
@@ -30,15 +30,23 @@ int main(int argc, char **argv) {
 
 	prob_size = atoi(argv[1]);
 	pointsPerIter = atoi(argv[2]);
-	DistParNelderMead *solver = new DistParNelderMead(prob_size, objFunction2,
+	double *guess = new double[prob_size];
+	for (int i = 0; i < prob_size; i++)
+		guess[i] = -1.0;
+	DistParNelderMead *solver = new DistParNelderMead(guess, 1.0, prob_size, objFunction1,
 			rank, size, pointsPerIter);
 
 	double t1, t2;
 	t1 = MPI_Wtime();
 	double *answer = solver->solve(max_iterations);
 	t2 = MPI_Wtime();
-	if (rank == 0)
+	if (rank == 0) {
 		std::cout << "Elapsed time during solve: " << t2 - t1 << std::endl;
+		for (int i = 0; i < prob_size - 1; i++) {
+			std::cout << answer[i] << ", ";
+		}
+		std::cout << answer[prob_size - 1] << std::endl;
+	}
 	delete solver;
 	delete answer;
 	MPI_Finalize();

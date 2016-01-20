@@ -3,8 +3,8 @@
  *
  * Implements MPI based distributed memory parallel NelderMead simplex method.
  *
- *  Created on: May 10, 2011
- *      Author: kyleklein
+ * Based on the implementations by Kyle Klein and Jeff Borggaard.
+ *
  */
 #include "DistParNelderMead.hpp"
 #include <mpi.h>
@@ -63,10 +63,10 @@ void DistParNelderMead::init(double *guess, double step, int dimension,
 	AE = new double[dimension];
 	AC = new double[dimension];
 	updated = false;
-	alpha = ALPHA;
-	beta = BETA;
-	gamma = GAMMA;
-	tau = TAU;
+	rho = RHO;
+    xi = XI;
+    gam = GAM;
+    sig = SIG;
 }
 
 DistParNelderMead::~DistParNelderMead() {
@@ -89,51 +89,66 @@ double* DistParNelderMead::solve(int max_iterations) {
 			MPI_MIN, MPI_COMM_WORLD);
 
 	int iter = 0;
+
 	while (best > 1e-6 && (max_iterations <= 0 || iter * size < max_iterations)) {
+
 		current_point = points_on_proc - (iter % points_per_iter) - 1;
 
+		// compute centroid
 		if (iter % points_per_iter == 0) {
 			centroid();
 		}
-		reflection(); //Compute reflection
-		fAR = obj_function(AR, dimension); //Evaluate reflection
-		//Case 1
-		if (fAR < best) {
-			expansion();
-			fAE = obj_function(AE, dimension); //Evaluate expansion
-			//If expansion is better, use that
-			if (fAE < best) {
-				//std::cout << "expansion best: " << fAE << "\n";
-				update(AE, current_point);
-				obj_function_results[indices[current_point]] = fAE;
-			} else { //otherwise use reflection
-				//std::cout << "reflection best\n";
-				update(AR, current_point);
-				obj_function_results[indices[current_point]] = fAR;
-			}
-			//Case 2
-		} else if (fAR < obj_function_results[indices[current_point - 1]]) {
-			//std::cout << "AR better than next worst\n";
-			update(AR, current_point);
-			obj_function_results[indices[current_point]] = fAR;
-			//Case 3
-		} else {
-			contraction();
-			fAC = obj_function(AC, dimension); //Evaluate contraction
-			//If Contraction is better, use it
-			if (fAC < std::min(obj_function_results[indices[current_point]], fAR)) {
-				//std::cout << "contraction better than worst\n";
-				update(AC, current_point);
-				obj_function_results[indices[current_point]] = fAC;
-			} else { //Otherwise, minimize
-				if (fAR < obj_function_results[indices[current_point]]) {
-					//std::cout << "reflection better than worst\n";
-					memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
-					obj_function_results[indices[current_point]] = fAR;
-				} //Else, not updated so don't bother
-			}
 
-		}
+	    // compute reflection and store function value in fAR
+	    reflection();
+	    fAR = obj_function(AR, dimension);
+
+	    if(best <= fAR && fAR <= obj_function_results[indices[current_point - 1]]) {
+	        // accept reflection point
+	        update(AR, current_point);
+	        obj_function_results[indices[current_point]] = fAR;
+	    } else if( fAR < best ) {
+	        // test for expansion
+	        expansion();
+	        fAE = obj_function(AE, dimension);
+	        if(fAE < fAR) {
+	            // accept expansion point
+	            update(AE, current_point);
+	            obj_function_results[indices[current_point]] = fAE;
+	        } else {
+	            // eventual accept reflection point
+	            update(AR, current_point);
+	            obj_function_results[indices[current_point]] = fAR;
+	        }
+	    } else if(obj_function_results[indices[current_point - 1]] <=fAR && fAR < obj_function_results[indices[current_point]]) {
+	        // do outside contraction
+	        outsidecontraction();
+	        fAC = obj_function(AC, dimension);
+	        if(fAC <= fAR) {
+	            // accept outside contraction point
+	            update(AC, current_point);
+	            obj_function_results[indices[current_point]] = fAC;
+	        } else {
+	            // shrink
+	            memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
+	            obj_function_results[indices[current_point]] = fAR;
+	        }
+	    } else {
+	        // do inside contraction
+	        insidecontraction();
+	        fAC = obj_function(AC, dimension);
+	        if(fAC < obj_function_results[indices[current_point]]) {
+	            // accept inside contraction point
+	            update(AC, current_point);
+	            obj_function_results[indices[current_point]] = fAC;
+	        } else {
+	            // shrink
+	            memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
+	            obj_function_results[indices[current_point]] = fAR;
+	        }
+	    }
+
+
 		if ((iter % points_per_iter) == points_per_iter - 1) {
 			int global_updated = 0;
 			MPI_Allreduce(&updated, &global_updated, 1, MPI_INT, MPI_SUM,
@@ -142,8 +157,7 @@ double* DistParNelderMead::solve(int max_iterations) {
 				minimize();
 				//Re-eval all of the points
 				for (int i = 0; i < points_on_proc; i++) {
-					obj_function_results[indices[i]] = obj_function(&SIMPLEX(i, 0),
-							dimension);
+					obj_function_results[indices[i]] = obj_function(&SIMPLEX(i, 0), dimension);
 				}
 			}
 			sort_simplex(); //Sort the simplex
@@ -158,9 +172,11 @@ double* DistParNelderMead::solve(int max_iterations) {
 				std::cout << iter << " " " " << best << std::endl;
 			}*/
 		iter++;
+
 	}
-	if (rank == 0)
+	if (rank == 0) {
 		std::cout << "Total Iterations: " << size * (iter) << std::endl;
+	}
 	double *answer = new double[dimension];
 	global_best(answer);
 	return answer;
@@ -190,7 +206,7 @@ void DistParNelderMead::centroid() {
 		}
 	}
 	for (int i = 0; i < dimension; i++) {
-		M[i] /= (dimension + 1); //Divide from earlier, then compute
+		M[i] /= (dimension + size - size * points_per_iter); //Divide from earlier, then compute
 	}
 	//Reduce into AR, then swap pointers.
 	MPI_Allreduce(M, AR, dimension, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
@@ -200,27 +216,27 @@ void DistParNelderMead::centroid() {
 }
 
 void DistParNelderMead::reflection() {
-	for (int i = 0; i < dimension; i++) {
-		AR[i] = M[i] + alpha * (M[i] - SIMPLEX(current_point, i));
-	}
+    for (int i = 0; i < dimension; i++) {
+        AR[i] = (1 + rho) * M[i] - rho * SIMPLEX(current_point,i);
+    }
 }
 
 void DistParNelderMead::expansion() {
-	for (int i = 0; i < dimension; i++) {
-		AE[i] = AR[i] + gamma * (AR[i] - M[i]);
-	}
+    for (int i = 0; i < dimension; i++) {
+        AE[i] = (1 + rho * xi) * M[i] - rho * xi * SIMPLEX(current_point,i);
+    }
 }
 
-void DistParNelderMead::contraction() {
-	double *ATilda;
-	if (fAR < obj_function_results[indices[current_point]]) {
-		ATilda = AR;
-	} else {
-		ATilda = &SIMPLEX(current_point, 0);
-	}
-	for (int i = 0; i < dimension; i++) {
-		AC[i] = M[i] + beta * (ATilda[i] - M[i]);
-	}
+void DistParNelderMead::insidecontraction() {
+    for (int i = 0; i < dimension; i++) {
+        AC[i] = (1 - gam) * M[i] + gam * SIMPLEX(current_point,i);
+    }
+}
+
+void DistParNelderMead::outsidecontraction() {
+    for (int i = 0; i < dimension; i++) {
+        AC[i] = (1 + rho * gam) * M[i] - rho * gam * SIMPLEX(current_point,i);
+    }
 }
 
 void DistParNelderMead::global_best(double *global_best) {
@@ -245,7 +261,7 @@ void DistParNelderMead::minimize() {
 	double *global_bestPoint = AC; // AC is currently unusued unused memory
 	global_best(global_bestPoint);
 	for (int i = 0; i < points_on_proc; i++) {
-		daxpy(&SIMPLEX(i, 0), tau, global_bestPoint, (1.0 - tau), &SIMPLEX(i, 0),
+		daxpy(&SIMPLEX(i, 0), sig, global_bestPoint, (1.0 - sig), &SIMPLEX(i, 0),
 				dimension);
 	}
 
