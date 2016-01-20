@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 		std::cout << answer[prob_size - 1] << std::endl;
 	}
 	delete solver;
-	delete answer;
+	delete[] answer;
 	MPI_Finalize();
 	return 0;
 }
