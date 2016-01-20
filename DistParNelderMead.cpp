@@ -267,17 +267,25 @@ void DistParNelderMead::global_best(double *global_best) {
 
 }
 
+
 void DistParNelderMead::minimize() {
-    double *ATilda;
-    if (fAR < obj_function_results[indices[points_on_proc - points_per_iter]]) {
-        ATilda = AR;
-    } else {
-        ATilda = &SIMPLEX(points_on_proc - points_per_iter, 0);
-    }
-    daxpy(&SIMPLEX(points_on_proc - points_per_iter,0), sig, &SIMPLEX(0,0), (1.0 - sig), ATilda, dimension);
-    for (int i = 1; i < dimension; i++) {
-        daxpy(&SIMPLEX(i,0), sig, &SIMPLEX(0,0), (1.0 - sig), &SIMPLEX(i,0), dimension);
-    }
+
+//    double *ATilda;
+//    if (fAR < obj_function_results[indices[dimension]]) {
+//        ATilda = AR;
+//    } else {
+//        ATilda = &SIMPLEX(dimension, 0);
+//    }
+//    daxpy(&SIMPLEX(dimension,0), sig, &SIMPLEX(0,0), (1.0 - sig), ATilda, dimension);
+//    for (int i = 1; i < dimension; i++) {
+//        daxpy(&SIMPLEX(i,0), sig, &SIMPLEX(0,0), (1.0 - sig), &SIMPLEX(i,0), dimension);
+//    }
+
+	double *global_bestPoint = AC; // AC is currently unused memory
+	global_best(global_bestPoint);
+	for (int i = 0; i < points_on_proc; i++) {
+		daxpy(&SIMPLEX(i, 0), sig, &SIMPLEX(i, 0), (1.0 - sig), global_bestPoint, dimension);
+	}
 
 }
 

@@ -199,15 +199,9 @@ void NelderMead::outsidecontraction() {
 }
 
 void NelderMead::minimize() {
-    double *ATilda;
-    if (fAR < obj_function_results[indices[dimension]]) {
-        ATilda = AR;
-    } else {
-        ATilda = &SIMPLEX(dimension, 0);
-    }
-    daxpy(&SIMPLEX(dimension,0), sig, &SIMPLEX(0,0), (1.0 - sig), ATilda, dimension);
-    for (int i = 1; i < dimension; i++) {
-        daxpy(&SIMPLEX(i,0), sig, &SIMPLEX(0,0), (1.0 - sig), &SIMPLEX(i,0), dimension);
+
+    for (int i = 1; i < dimension + 1; i++) {
+        daxpy(&SIMPLEX(i,0), sig, &SIMPLEX(i, 0), (1.0 - sig), &SIMPLEX(0, 0), dimension);
     }
 
 }
