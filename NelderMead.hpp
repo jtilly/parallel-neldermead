@@ -1,17 +1,17 @@
 /*
  * NelderMead.hpp
  *
- *  Created on: May 10, 2011
- *      Author: kyleklein
+ * Based on the implementations by Kyle Klein and Jeff Borggaard.
+ *
  */
 
 #ifndef NELDERMEAD_HPP_
 #define NELDERMEAD_HPP_
 #define SIMPLEX(i,j) simplex[((indices[(i)])*dimension) + (j) ]
-#define ALPHA (1.0)
-#define BETA (.5)
-#define GAMMA (1.0)
-#define TAU (.5)
+#define RHO (1.0) // RHO > 0
+#define XI (2)    // XI  > max(RHO, 1)
+#define GAM (0.5) // 0 < GAM < 1
+#define SIG (0.5) // 0 < SIG < 1
 
 class NelderMead {
 public:
@@ -45,20 +45,22 @@ public:
 	 * then it will iterate until objective function is less than 10^-6.
 	 */
 	double* solve(int max_iter);
-	//Set alpha, otherwise assumed to be ALPHA
-	void set_alpha(double alpha);
-	//Set beta, otherwise assumed BETA
-	void set_beta(double beta);
-	//Set gamma, otherwise assumed GAMMA
-	void set_gamma(double gamma);
-	//Set tau, otherwise assumed to be TAU
-	void set_tau(double tau);
+	//Set rho, otherwise assumed to be RHO
+	void set_rho(double rho);
+	//Set xi, otherwise assumed XI
+	void set_xi(double xi);
+	//Set gam, otherwise assumed GAM
+	void set_gam(double gam);
+	//Set sig, otherwise assumed to be SIG
+	void set_sig(double sig);
 
 private:
 	void reflection();
 	void expansion();
-	void contraction();
+	void insidecontraction();
+	void outsidecontraction();
 	void minimize();
+	void centroid();
 	void daxpy(double *result, double scalar1, double *a, double scalar2,
 			double *b, int length);
 	void print_simplex();
@@ -66,7 +68,7 @@ private:
 	void sort_simplex();
 	double *simplex, *M, *AR, *AE, *AC;
 	double *obj_function_results;
-	double alpha, beta, gamma, tau, fAR, fAE, fAC;
+	double rho, xi, gam, sig, fAR, fAE, fAC;
 	int *indices;
 	int dimension;
 	double (*obj_function)(double *vector, int dimension);
