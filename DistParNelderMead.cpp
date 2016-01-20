@@ -105,14 +105,14 @@ double* DistParNelderMead::solve(int max_iterations) {
 			centroid();
 		}
 
-		std::cout << "Centroid\n";
-		for(int i = 0; i<dimension; i++) {
-			std::cout << M[i] << " ";
-		}
-		std::cout << "\n";
-
-		std::cout << "Simplex\n";
-		print_simplex();
+		// std::cout << "Centroid\n";
+		// for(int i = 0; i<dimension; i++) {
+		// 	std::cout << M[i] << " ";
+		// }
+		// std::cout << "\n";
+		//
+		// std::cout << "Simplex\n";
+		// print_simplex();
 
 	    // compute reflection and store function value in fAR
 	    reflection();
