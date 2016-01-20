@@ -1,8 +1,8 @@
 /*
  * ObjFunction.hpp
  *
- *  Created on: May 17, 2011
- *      Author: kyleklein
+ * Based on the implementations by Kyle Klein and Jeff Borggaard.
+ *
  */
 
 #ifndef OBJFUNCTION_HPP_
@@ -118,6 +118,11 @@ double extended_rosenbrock(double *points, int dimension) {
 
 	double sum = 0;
 	double *r = new double[dimension];
+
+    if(dimension % 2 > 0) {
+        std::cerr << "Dimension must be an even number for extended Rosenbrock function.";
+        exit(1);
+    }
 
 	for (int i = 0; i < dimension; i += 2) {
 		r[i] = 1.0 - points[i];
