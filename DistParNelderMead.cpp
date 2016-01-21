@@ -99,7 +99,6 @@ double* DistParNelderMead::solve(int max_iterations) {
 	while (best > 1e-6 && (max_iterations <= 0 || iter * size < max_iterations)) {
 
 		current_point = points_on_proc - (iter % points_per_iter) - 1;
-
 		updated = 0;
 
 		// compute centroid
@@ -145,10 +144,6 @@ double* DistParNelderMead::solve(int max_iterations) {
 	            // accept outside contraction point
 	            update(AC, current_point);
 	            obj_function_results[indices[current_point]] = fAC;
-	        } else {
-	            // shrink
-	            memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
-	            obj_function_results[indices[current_point]] = fAR;
 	        }
 	    } else {
 	        // do inside contraction
@@ -158,10 +153,6 @@ double* DistParNelderMead::solve(int max_iterations) {
 	            // accept inside contraction point
 	            update(AC, current_point);
 	            obj_function_results[indices[current_point]] = fAC;
-	        } else {
-	            // shrink
-	            memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
-	            obj_function_results[indices[current_point]] = fAR;
 	        }
 	    }
 
@@ -276,11 +267,24 @@ void DistParNelderMead::global_best(double *global_best) {
 
 }
 
+
 void DistParNelderMead::minimize() {
-	double *global_bestPoint = AC; // AC is currently unusued unused memory
+
+//    double *ATilda;
+//    if (fAR < obj_function_results[indices[dimension]]) {
+//        ATilda = AR;
+//    } else {
+//        ATilda = &SIMPLEX(dimension, 0);
+//    }
+//    daxpy(&SIMPLEX(dimension,0), sig, &SIMPLEX(0,0), (1.0 - sig), ATilda, dimension);
+//    for (int i = 1; i < dimension; i++) {
+//        daxpy(&SIMPLEX(i,0), sig, &SIMPLEX(0,0), (1.0 - sig), &SIMPLEX(i,0), dimension);
+//    }
+
+	double *global_bestPoint = AC; // AC is currently unused memory
 	global_best(global_bestPoint);
 	for (int i = 0; i < points_on_proc; i++) {
-		daxpy(&SIMPLEX(i, 0), sig, global_bestPoint, (1.0 - sig), &SIMPLEX(i, 0), dimension);
+		daxpy(&SIMPLEX(i, 0), sig, &SIMPLEX(i, 0), (1.0 - sig), global_bestPoint, dimension);
 	}
 
 }
