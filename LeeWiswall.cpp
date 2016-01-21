@@ -38,7 +38,7 @@ void DistParNelderMead::init(double *guess, double step, int dimension,
 			this->simplex = new double[dimension * (dimension + 1)];
 			for (int i = 0; i < dimension + 1; i++) {
 		        for (int j = 0; j < dimension; j++) {
-		            SIMPLEX(i,j) = 1.0;
+		            SIMPLEX(i,j) = guess[j];
 		            if (i == j + 1) {
 		                SIMPLEX(i,j) += 1;
 		            }
