@@ -1,5 +1,12 @@
 CFLAGS = $(USERFLAGS)
 
+all: serial parallel tests leewiswall
+
+run: 
+	./LeeWiswall.out 10 
+	./NelderTest.out 10 
+	./DistParNelderTest.out 10 1
+
 serial: NelderMead.o
 	g++ $(CFLAGS) -o NelderTest.out NelderMead_Driver.cpp NelderMead.o
 
