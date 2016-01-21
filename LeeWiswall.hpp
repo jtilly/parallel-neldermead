@@ -1,20 +1,21 @@
 /*
- * DistParNelderMead.hpp
+ * LeeWiswall.hpp
  *
  * Implements MPI based distributed memory parallel NelderMead simplex method.
  *
- *  Created on: May 10, 2011
- *      Author: kyleklein
+ * Based on the implementations by Donghoon Lee and Matthew Wiswall,
+ * Kyle Klein, and Jeff Borggaard.
+ *
  */
 
-#ifndef NELDERMEAD_HPP_
-#define NELDERMEAD_HPP_
+#ifndef LEEWISWALL_HPP_
+#define LEEWISWALL_HPP_
 #define SIMPLEX(i,j) simplex[((indices[(i)])*dimension) + (j) ]
 #define RHO (1.0) // RHO > 0
-#define XI (2.0)    // XI  > max(RHO, 1)
+#define XI (2.0)  // XI  > max(RHO, 1)
 #define GAM (0.5) // 0 < GAM < 1
 #define SIG (0.5) // 0 < SIG < 1
-class DistParNelderMead {
+class LeeWiswall {
 public:
     /**
      * Given initial guess, a step, the dimension of the simplex,
@@ -25,18 +26,18 @@ public:
      * obj_function: Pointer to the objective function, takes as argument
      *              a vector and its length, should return a double.
      */
-    DistParNelderMead(double *guess, double step, int dimension,
+    LeeWiswall(double *guess, double step, int dimension,
                       double (*obj_function)(double *vector, int dimension), int rank, int size);
     
     /**
      * Same as above except we initialize the simplex to whatever we choose.
      */
-    DistParNelderMead(int dimension,
+    LeeWiswall(int dimension,
                       double (*obj_function)(double *vector, int dimension), int rank, int size);
     /*
      * Deletes user passed simplex as well as all allocated memory.
      */
-    ~DistParNelderMead();
+    ~LeeWiswall();
     /**
      * Find the point which minimizes the objective function, and return
      * an array of dimension doubles. User is responsible to free that memory.
@@ -94,4 +95,4 @@ private:
     double *obj_function_results;
 };
 
-#endif /* NELDERMEAD_HPP_ */
+#endif /* LEEWISWALL_HPP_ */

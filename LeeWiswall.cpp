@@ -7,18 +7,19 @@
  * Kyle Klein, and Jeff Borggaard.
  *
  */
+ 
 #include "LeeWiswall.hpp"
 #include <mpi.h>
 #include <iostream>
 #include "string.h"
 #include <algorithm>
 
-DistParNelderMead::DistParNelderMead(double *guess, double step, int dimension,
+LeeWiswall::LeeWiswall(double *guess, double step, int dimension,
                                      double (*obj_function)(double *vector, int dimension), int rank, int size) {
     init(guess, step, dimension, obj_function, rank, size);
 }
 
-DistParNelderMead::DistParNelderMead(int dimension,
+LeeWiswall::LeeWiswall(int dimension,
                                      double (*obj_function)(double *vector, int dimension), int rank, int size) {
     double *guess = new double[dimension];
     for (int i = 0; i < dimension; i++) {
@@ -28,7 +29,7 @@ DistParNelderMead::DistParNelderMead(int dimension,
     delete[] guess;
 }
 
-void DistParNelderMead::init(double *guess, double step, int dimension,
+void LeeWiswall::init(double *guess, double step, int dimension,
                              double (*obj_function)(double *vector, int dimension), int rank, int size) {
     
     indices = new int[(dimension + 1)];
@@ -60,7 +61,7 @@ void DistParNelderMead::init(double *guess, double step, int dimension,
     sig = SIG;
 }
 
-DistParNelderMead::~DistParNelderMead() {
+LeeWiswall::~LeeWiswall() {
     delete[] indices;
     delete[] simplex;
     delete[] M;
@@ -70,7 +71,7 @@ DistParNelderMead::~DistParNelderMead() {
     delete[] AC;
 }
 
-double* DistParNelderMead::solve(int max_iterations) {
+double* LeeWiswall::solve(int max_iterations) {
     
     //Compute objective function
     for (int i = 0; i < dimension + 1; i++) {
@@ -173,7 +174,7 @@ double* DistParNelderMead::solve(int max_iterations) {
     return &SIMPLEX(0,0);
 }
 
-void DistParNelderMead::update(double *vector, int index) {
+void LeeWiswall::update(double *vector, int index) {
     if (!updated) { //only need to check if not already updated
         for (int i = 0; i < dimension; i++) {
             if (vector[i] != SIMPLEX(index, i)) {
@@ -187,7 +188,7 @@ void DistParNelderMead::update(double *vector, int index) {
     }
 }
 
-void DistParNelderMead::centroid() {
+void LeeWiswall::centroid() {
     for (int i = 0; i < dimension; i++) {
         M[i] = 0.0;
     }
@@ -203,31 +204,31 @@ void DistParNelderMead::centroid() {
     }
 }
 
-void DistParNelderMead::reflection() {
+void LeeWiswall::reflection() {
     for (int i = 0; i < dimension; i++) {
         AR[i] = (1 + rho) * M[i] - rho * SIMPLEX(current_point,i);
     }
 }
 
-void DistParNelderMead::expansion() {
+void LeeWiswall::expansion() {
     for (int i = 0; i < dimension; i++) {
         AE[i] = (1 + rho * xi) * M[i] - rho * xi * SIMPLEX(current_point,i);
     }
 }
 
-void DistParNelderMead::insidecontraction() {
+void LeeWiswall::insidecontraction() {
     for (int i = 0; i < dimension; i++) {
         AC[i] = (1 - gam) * M[i] + gam * SIMPLEX(current_point,i);
     }
 }
 
-void DistParNelderMead::outsidecontraction() {
+void LeeWiswall::outsidecontraction() {
     for (int i = 0; i < dimension; i++) {
         AC[i] = (1 + rho * gam) * M[i] - rho * gam * SIMPLEX(current_point,i);
     }
 }
 
-void DistParNelderMead::broadcast() {
+void LeeWiswall::broadcast() {
     
     double *border_simplex = new double[dimension * size];
     double *border_fval = new double[size];
@@ -253,22 +254,22 @@ void DistParNelderMead::broadcast() {
     
 }
 
-void DistParNelderMead::minimize() {
+void LeeWiswall::minimize() {
     for (int i = 1; i < dimension + 1; i++) {
         daxpy(&SIMPLEX(i,0), sig, &SIMPLEX(0,0), (1.0 - sig), &SIMPLEX(i,0), dimension);
     }
 }
 
 // result = scalar1*a + scalar2*b
-void DistParNelderMead::daxpy(double *result, double scalar1, double *a,
+void LeeWiswall::daxpy(double *result, double scalar1, double *a,
                               double scalar2, double *b, int length) {
     for (int i = 0; i < length; i++) {
         result[i] = scalar1 * a[i] + scalar2 * b[i];
     }
 }
 
-//Debugging purposes
-void DistParNelderMead::print_simplex() {
+// Debugging purposes
+void LeeWiswall::print_simplex() {
     for (int i = 0; i < dimension + 1; i++) {
         for (int j = 0; j < dimension; j++) {
             std::cout << SIMPLEX(i, j) << " ";
@@ -278,6 +279,6 @@ void DistParNelderMead::print_simplex() {
     std::cout << std::endl;
 }
 
-void DistParNelderMead::sort_simplex() {
+void LeeWiswall::sort_simplex() {
     std::sort(indices, indices + dimension + 1, IndexSorter(obj_function_results));
 }

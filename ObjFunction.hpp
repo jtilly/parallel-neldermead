@@ -9,7 +9,6 @@
 #define OBJFUNCTION_HPP_
 #include <algorithm>
 #include <math.h>
-#include "DistParNelderMead.hpp"
 #include <fstream>
 #include <iostream>
 #include <string.h>

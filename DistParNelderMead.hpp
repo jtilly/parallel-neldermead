@@ -7,8 +7,8 @@
  *      Author: kyleklein
  */
 
-#ifndef NELDERMEAD_HPP_
-#define NELDERMEAD_HPP_
+#ifndef DISTR_PAR_NELDERMEAD_HPP_
+#define DISTR_PAR_NELDERMEAD_HPP_
 #define SIMPLEX(i,j) simplex[((indices[(i)])*dimension) + (j) ]
 #define RHO (1.0) // RHO > 0
 #define XI (2.0)    // XI  > max(RHO, 1)
@@ -97,4 +97,4 @@ private:
     double *obj_function_results;
 };
 
-#endif /* NELDERMEAD_HPP_ */
+#endif /* DISTR_PAR_NELDERMEAD_HPP_ */
