@@ -100,6 +100,8 @@ double* DistParNelderMead::solve(int max_iterations) {
 
 		current_point = points_on_proc - (iter % points_per_iter) - 1;
 
+		updated = 0;
+
 		// compute centroid
 		if (iter % points_per_iter == 0) {
 			centroid();
