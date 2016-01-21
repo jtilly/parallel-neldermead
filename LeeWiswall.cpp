@@ -243,6 +243,10 @@ void DistParNelderMead::broadcast() {
 		obj_function_results[indices[dimension + 1 - size + i]] = border_fval[i];
 	}
 
+	// clean up
+	delete[] border_simplex;
+	delete[] border_fval;
+
 }
 
 void DistParNelderMead::minimize() {
