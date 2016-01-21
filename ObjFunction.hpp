@@ -31,12 +31,12 @@
 //   (-1,-1),
 //   (+1,-1),
 double himmelblau(double *points, int dimension) {
-
-	double sum = 0;
-	sum += std::pow(std::pow(points[0], 2) + points[1] - 11, 2);
-	sum += std::pow(points[0] + std::pow(points[1], 2) - 7, 2);
-
-	return sum;
+    
+    double sum = 0;
+    sum += std::pow(std::pow(points[0], 2) + points[1] - 11, 2);
+    sum += std::pow(points[0] + std::pow(points[1], 2) - 7, 2);
+    
+    return sum;
 }
 
 // Computes the Rosenbrock function.
@@ -47,11 +47,11 @@ double himmelblau(double *points, int dimension) {
 //
 // The contours are sharply twisted.
 double rosenbrock(double *points, int dimension) {
-
-	double sum = 0;
-	sum += std::pow(1.0 - points[0], 2);
+    
+    double sum = 0;
+    sum += std::pow(1.0 - points[0], 2);
     sum += 100.0 * std::pow(points[1] - points[0] * points[0], 2);
-
+    
     return sum;
 }
 
@@ -73,14 +73,14 @@ double rosenbrock(double *points, int dimension) {
 //
 //   X = ( 1.0, 4.0 )
 double beale(double *points, int dimension) {
-
-	double sum = 0;
-	sum += std::pow(1.5   - points[0] * (1.0 - points[1]), 2);
-  	sum += std::pow(2.25  - points[0] * (1.0 - std::pow(points[1], 2)), 2);
-	sum += std::pow(2.625 - points[0] * (1.0 - std::pow(points[1], 3)), 2);
-
-	return sum;
-
+    
+    double sum = 0;
+    sum += std::pow(1.5   - points[0] * (1.0 - points[1]), 2);
+    sum += std::pow(2.25  - points[0] * (1.0 - std::pow(points[1], 2)), 2);
+    sum += std::pow(2.625 - points[0] * (1.0 - std::pow(points[1], 3)), 2);
+    
+    return sum;
+    
 }
 
 // Evaluates the Bohachevsky function #2.
@@ -94,17 +94,17 @@ double beale(double *points, int dimension) {
 //
 //   X init = [ 0.6, 1.3 ];
 double bohach2(double *points, int dimension) {
-
-	double sum = 0;
-	const double pi = 3.14159265358979323846;
-
-	sum += points[0] * points[0];
+    
+    double sum = 0;
+    const double pi = 3.14159265358979323846;
+    
+    sum += points[0] * points[0];
     sum +=  2.0 * points[1] * points[1];
     sum -=  0.3 * cos(3.0 * pi * points[0]) * cos(4.0 * pi * points[1]);
     sum += + 0.3;
-
-	return sum;
-
+    
+    return sum;
+    
 }
 
 //  Computes the extended Rosenbrock function.
@@ -115,28 +115,28 @@ double bohach2(double *points, int dimension) {
 //
 // The contours are sharply twisted.
 double extended_rosenbrock(double *points, int dimension) {
-
-	double sum = 0;
-	double *r = new double[dimension];
-
+    
+    double sum = 0;
+    double *r = new double[dimension];
+    
     if(dimension % 2 > 0) {
         std::cerr << "Dimension must be an even number for extended Rosenbrock function.";
         exit(1);
     }
-
-	for (int i = 0; i < dimension; i += 2) {
-		r[i] = 1.0 - points[i];
-		r[i + 1] = 10.0 * (points[i + 1] - std::pow(points[i], 2));
-	}
-
-	for (int i = 0; i < dimension; i++) {
-		sum += std::pow(r[i], 2);
-	}
-
-	delete[] r;
-
-	return sum;
-
+    
+    for (int i = 0; i < dimension; i += 2) {
+        r[i] = 1.0 - points[i];
+        r[i + 1] = 10.0 * (points[i + 1] - std::pow(points[i], 2));
+    }
+    
+    for (int i = 0; i < dimension; i++) {
+        sum += std::pow(r[i], 2);
+    }
+    
+    delete[] r;
+    
+    return sum;
+    
 }
 
 // Computes the Powell singular quartic function.
@@ -149,14 +149,14 @@ double extended_rosenbrock(double *points, int dimension) {
 //
 //   X = ( 3.0, -1.0, 0.0, 1.0 )
 double powell(double *points, int dimension) {
-
-	double f1 = points[0] + 10.0 * points[1];
-  	double f2 = points[2] - points[3];
-  	double f3 = points[1] - 2.0 * points[2];
-  	double f4 = points[0] - points[3];
-
-  	return f1 * f1 + f2 * f2 + f3 * f3 + f4 * f4;
-
+    
+    double f1 = points[0] + 10.0 * points[1];
+    double f2 = points[2] - points[3];
+    double f3 = points[1] - 2.0 * points[2];
+    double f4 = points[0] - points[3];
+    
+    return f1 * f1 + f2 * f2 + f3 * f3 + f4 * f4;
+    
 }
 
 //  Evaluates the Goldstein-Price polynomial.
@@ -171,14 +171,14 @@ double powell(double *points, int dimension) {
 //  X init = [ -0.5, 0.25 ] (easy convergence)
 //  X init = [ -4.0, 5.00 ] (harder convergence)
 double goldstein_price(double *points, int dimension) {
-
+    
     double a = points[0] + points[1] + 1.0;
     double b = 19.0 - 14.0 * points[0] + 3.0 * points[0] * points[0] - 14.0 * points[1] + 6.0 * points[0] * points[1] + 3.0 * points[1] * points[1];
     double c = 2.0 * points[0] - 3.0 * points[1];
     double d = 18.0 - 32.0 * points[0] + 12.0 * points[0] * points[0] + 48.0 * points[1] - 36.0 * points[0] * points[1] + 27.0 * points[1] * points[1];
     double f = ( 1.0 + a * a * b ) * ( 30.0 + c * c * d );
-
- 	return f;
+    
+    return f;
 }
 
 
@@ -200,37 +200,37 @@ double goldstein_price(double *points, int dimension) {
 //
 //    X = ( -15, -35), F(X) = 1.49 * 10^8.
 double local(double *points, int dimension) {
-
-	double sum = 0;
-
-	sum += std::pow(std::pow(points[0], 2) + 12 * points[1] - 1, 2);
+    
+    double sum = 0;
+    
+    sum += std::pow(std::pow(points[0], 2) + 12 * points[1] - 1, 2);
     sum += std::pow(49 * std::pow(points[0], 2) + 49 * std::pow(points[1], 2) + 84 * points[0] + 2324 * points[1] - 681, 2);
-
+    
     return sum;
 }
 
 //  Computes the sum of squares function
 double objFunction1(double *points, int dimension) {
-
-	double sum = 0;
-
-	for (int i = 0; i < dimension; ++i) {
-		sum += std::pow(points[i] - 2.0, 2) / dimension;
-	}
-
-	return sum;
+    
+    double sum = 0;
+    
+    for (int i = 0; i < dimension; ++i) {
+        sum += std::pow(points[i] - 2.0, 2) / dimension;
+    }
+    
+    return sum;
 }
 
 //  Computes the sum of absolute values function
 double objFunction2(double *points, int dimension) {
-
-	double sum = 0;
-
-	for (int i = 0; i < dimension; ++i) {
-		sum += std::abs(points[i] - 2.0)/ dimension;
-	}
-
-	return sum;
+    
+    double sum = 0;
+    
+    for (int i = 0; i < dimension; ++i) {
+        sum += std::abs(points[i] - 2.0)/ dimension;
+    }
+    
+    return sum;
 }
 
 #endif
