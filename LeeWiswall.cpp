@@ -123,8 +123,10 @@ double* DistParNelderMead::solve(int max_iterations) {
 	            obj_function_results[indices[current_point]] = fAC;
 	        } else {
 	            // shrink
-	            memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
-	            obj_function_results[indices[current_point]] = fAR;
+	            if(fAR < obj_function_results[indices[current_point]]) {
+	            	memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
+	            	obj_function_results[indices[current_point]] = fAR;
+	            }
 	        }
 	    } else {
 	        // do inside contraction
@@ -136,8 +138,10 @@ double* DistParNelderMead::solve(int max_iterations) {
 	            obj_function_results[indices[current_point]] = fAC;
 	        } else {
 	            // shrink
-	            memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
-	            obj_function_results[indices[current_point]] = fAR;
+	            if(fAR < obj_function_results[indices[current_point]]) {
+		            memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
+		            obj_function_results[indices[current_point]] = fAR;
+	        	} 
 	        }
 	    }
 

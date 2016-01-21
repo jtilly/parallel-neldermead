@@ -144,6 +144,12 @@ double* DistParNelderMead::solve(int max_iterations) {
 	            // accept outside contraction point
 	            update(AC, current_point);
 	            obj_function_results[indices[current_point]] = fAC;
+	        } else {
+	        	if(fAR < obj_function_results[indices[current_point]]) {
+	        		// just move the memory, do not update
+					memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
+					obj_function_results[indices[current_point]] = fAR;
+				}
 	        }
 	    } else {
 	        // do inside contraction
@@ -153,21 +159,26 @@ double* DistParNelderMead::solve(int max_iterations) {
 	            // accept inside contraction point
 	            update(AC, current_point);
 	            obj_function_results[indices[current_point]] = fAC;
+	        } else {
+	        	if(fAR < obj_function_results[indices[current_point]]) {
+	        		// just move the memory, do not update
+					memmove(&SIMPLEX(current_point, 0), AR, dimension * sizeof(double));
+					obj_function_results[indices[current_point]] = fAR;
+				}
 	        }
 	    }
 
 
 		if ((iter % points_per_iter) == points_per_iter - 1) {
 			int global_updated = 0;
-			MPI_Allreduce(&updated, &global_updated, 1, MPI_INT, MPI_SUM,
-					MPI_COMM_WORLD);
+			MPI_Allreduce(&updated, &global_updated, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 			if (!global_updated) { //not one processor had an update, minimize
 				minimize();
 				//Re-eval all of the points
 				for (int i = 0; i < points_on_proc; i++) {
 					obj_function_results[indices[i]] = obj_function(&SIMPLEX(i, 0), dimension);
 				}
-			}
+			} 
 			sort_simplex(); //Sort the simplex
 			//Find the new best
 			best = obj_function_results[indices[0]];
