@@ -80,6 +80,7 @@ private:
     int *indices;
     int dimension, points_on_proc;
     int rank, size, points_per_iter, current_point;
+    int feval;
     int updated;
     double (*obj_function)(double *vector, int dimension);
     

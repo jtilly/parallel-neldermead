@@ -80,6 +80,7 @@ private:
     int dimension;
     int rank, size, current_point;
     int updated;
+    int feval;
     double (*obj_function)(double *vector, int dimension);  
 };
 

@@ -34,6 +34,7 @@ NelderMead::NelderMead(double *guess, double step, int dimension,
     xi = XI;
     gam = GAM;
     sig = SIG;
+    feval = 0;
 }
 
 NelderMead::NelderMead(int dimension,
@@ -62,6 +63,7 @@ NelderMead::NelderMead(int dimension,
     xi = XI;
     gam = GAM;
     sig = SIG;
+    feval = 0;
 }
 
 NelderMead::~NelderMead() {
@@ -78,6 +80,7 @@ double* NelderMead::solve(int max_iter) {
     // Compute objective function
     for (int i = 0; i < dimension + 1; i++) {
         obj_function_results[i] = obj_function(&SIMPLEX(i,0), dimension);
+        feval++;
     }
     
     sort_simplex(); //Sort the simplex
@@ -93,6 +96,7 @@ double* NelderMead::solve(int max_iter) {
         // compute reflection and store function value in fAR
         reflection();
         fAR = obj_function(AR, dimension);
+        feval++;
         
         if(best <= fAR && fAR <= obj_function_results[indices[dimension - 1]]) {
             // accept reflection point
@@ -102,6 +106,7 @@ double* NelderMead::solve(int max_iter) {
             // test for expansion
             expansion();
             fAE = obj_function(AE, dimension);
+            feval++;
             if(fAE < fAR) {
                 // accept expansion point
                 memmove(&SIMPLEX(dimension, 0), AE, dimension * sizeof(double));
@@ -115,6 +120,7 @@ double* NelderMead::solve(int max_iter) {
             // do outside contraction
             outsidecontraction();
             fAC = obj_function(AC, dimension);
+            feval++;
             if(fAC <= fAR) {
                 // accept outside contraction point
                 memmove(&SIMPLEX(dimension, 0), AC, dimension * sizeof(double));
@@ -125,12 +131,14 @@ double* NelderMead::solve(int max_iter) {
                 //re-evaluate for next iteration
                 for (int i = 0; i < dimension + 1; i++) {
                     obj_function_results[indices[i]] = obj_function(&SIMPLEX(i,0), dimension);
+                    feval++;
                 }
             }
         } else {
             // do inside contraction
             insidecontraction();
             fAC = obj_function(AC, dimension);
+            feval++;
             if(fAC < worst) {
                 // accept inside contraction point
                 memmove(&SIMPLEX(dimension, 0), AC, dimension * sizeof(double));
@@ -141,6 +149,7 @@ double* NelderMead::solve(int max_iter) {
                 //re-evaluate for next iteration
                 for (int i = 0; i < dimension + 1; i++) {
                     obj_function_results[indices[i]] = obj_function(&SIMPLEX(i,0), dimension);
+                    feval++;
                 }
             }
         }
@@ -157,6 +166,7 @@ double* NelderMead::solve(int max_iter) {
         iter++;
     }
     std::cout << iter << " total iterations\n";
+    std::cout << "Total Function Evaluations: " << feval << std::endl;
     return &SIMPLEX(0,0);
 }
 

@@ -71,6 +71,7 @@ private:
     double rho, xi, gam, sig, fAR, fAE, fAC;
     int *indices;
     int dimension;
+    int feval;
     double (*obj_function)(double *vector, int dimension);
     
 };

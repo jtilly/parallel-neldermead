@@ -59,6 +59,7 @@ void LeeWiswall::init(double *guess, double step, int dimension,
     xi = XI;
     gam = GAM;
     sig = SIG;
+    feval = 0;
 }
 
 LeeWiswall::~LeeWiswall() {
@@ -94,6 +95,7 @@ double* LeeWiswall::solve(int max_iterations) {
         // compute reflection and store function value in fAR
         reflection();
         fAR = obj_function(AR, dimension);
+        feval++;
         
         if(best <= fAR && fAR <= obj_function_results[indices[current_point - 1]]) {
             // accept reflection point
@@ -103,6 +105,7 @@ double* LeeWiswall::solve(int max_iterations) {
             // test for expansion
             expansion();
             fAE = obj_function(AE, dimension);
+            feval++;
             if(fAE < fAR) {
                 // accept expansion point
                 update(AE, current_point);
@@ -116,6 +119,7 @@ double* LeeWiswall::solve(int max_iterations) {
             // do outside contraction
             outsidecontraction();
             fAC = obj_function(AC, dimension);
+            feval++;
             if(fAC <= fAR) {
                 // accept outside contraction point
                 update(AC, current_point);
@@ -131,6 +135,7 @@ double* LeeWiswall::solve(int max_iterations) {
             // do inside contraction
             insidecontraction();
             fAC = obj_function(AC, dimension);
+            feval++;
             if(fAC < obj_function_results[indices[current_point]]) {
                 // accept inside contraction point
                 update(AC, current_point);
@@ -165,8 +170,13 @@ double* LeeWiswall::solve(int max_iterations) {
         iter++;
         
     }
+    
+    int total_feval;
+    MPI_Reduce(&feval, &total_feval, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
     if (rank == 0) {
         std::cout << "Total Iterations: " << iter << std::endl;
+        std::cout << "Total Function Evaluations: " << total_feval << std::endl;
     }
     
     return &SIMPLEX(0,0);
@@ -320,6 +330,7 @@ void LeeWiswall::evaluate_all() {
     int j = 0;
     for(int i = point_begin; i < point_end; i++) {
         obj_function_chunk[j++] = obj_function(&SIMPLEX(i, 0), dimension);
+        feval++;
     }
          
     // communicate and retrieve results

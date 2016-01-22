@@ -73,6 +73,7 @@ void DistParNelderMead::init(double *guess, double step, int dimension,
     xi = XI;
     gam = GAM;
     sig = SIG;
+    feval = 0;
 }
 
 DistParNelderMead::~DistParNelderMead() {
@@ -89,6 +90,7 @@ double* DistParNelderMead::solve(int max_iterations) {
     //Compute objective function
     for (int i = 0; i < points_on_proc; i++) {
         obj_function_results[i] = obj_function(&SIMPLEX(i, 0), dimension);
+        feval++;
     }
     sort_simplex(); //Sort the simplex
     MPI_Allreduce(&(obj_function_results[indices[0]]), &best, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
@@ -104,19 +106,11 @@ double* DistParNelderMead::solve(int max_iterations) {
         if (iter % points_per_iter == 0) {
             centroid();
         }
-        
-        // std::cout << "Centroid\n";
-        // for(int i = 0; i<dimension; i++) {
-        //  std::cout << M[i] << " ";
-        // }
-        // std::cout << "\n";
-        //
-        // std::cout << "Simplex\n";
-        // print_simplex();
-        
+                
         // compute reflection and store function value in fAR
         reflection();
         fAR = obj_function(AR, dimension);
+        feval++;
         
         if(best <= fAR && fAR <= obj_function_results[indices[current_point - 1]]) {
             // accept reflection point
@@ -126,6 +120,7 @@ double* DistParNelderMead::solve(int max_iterations) {
             // test for expansion
             expansion();
             fAE = obj_function(AE, dimension);
+            feval++;
             if(fAE < fAR) {
                 // accept expansion point
                 update(AE, current_point);
@@ -139,6 +134,7 @@ double* DistParNelderMead::solve(int max_iterations) {
             // do outside contraction
             outsidecontraction();
             fAC = obj_function(AC, dimension);
+            feval++;
             if(fAC <= fAR) {
                 // accept outside contraction point
                 update(AC, current_point);
@@ -154,6 +150,7 @@ double* DistParNelderMead::solve(int max_iterations) {
             // do inside contraction
             insidecontraction();
             fAC = obj_function(AC, dimension);
+            feval++;
             if(fAC < obj_function_results[indices[current_point]]) {
                 // accept inside contraction point
                 update(AC, current_point);
@@ -176,6 +173,7 @@ double* DistParNelderMead::solve(int max_iterations) {
                 //Re-eval all of the points
                 for (int i = 0; i < points_on_proc; i++) {
                     obj_function_results[indices[i]] = obj_function(&SIMPLEX(i, 0), dimension);
+                    feval++;
                 }
             } 
             sort_simplex(); //Sort the simplex
@@ -191,8 +189,13 @@ double* DistParNelderMead::solve(int max_iterations) {
         iter++;
         
     }
+    
+    int total_feval;
+    MPI_Reduce(&feval, &total_feval, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
     if (rank == 0) {
-        std::cout << "Total Iterations: " << size * (iter) << std::endl;
+        std::cout << "Total Iterations: " << iter << std::endl;
+        std::cout << "Total Function Evaluations: " << total_feval << std::endl;
     }
     double *answer = new double[dimension];
     global_best(answer);
@@ -276,18 +279,7 @@ void DistParNelderMead::global_best(double *global_best) {
 
 
 void DistParNelderMead::minimize() {
-    
-    //    double *ATilda;
-    //    if (fAR < obj_function_results[indices[dimension]]) {
-    //        ATilda = AR;
-    //    } else {
-    //        ATilda = &SIMPLEX(dimension, 0);
-    //    }
-    //    daxpy(&SIMPLEX(dimension,0), sig, &SIMPLEX(0,0), (1.0 - sig), ATilda, dimension);
-    //    for (int i = 1; i < dimension; i++) {
-    //        daxpy(&SIMPLEX(i,0), sig, &SIMPLEX(0,0), (1.0 - sig), &SIMPLEX(i,0), dimension);
-    //    }
-    
+        
     double *global_bestPoint = new double[dimension]; // AC is currently unused memory
     global_best(global_bestPoint);
     for (int i = 0; i < points_on_proc; i++) {
