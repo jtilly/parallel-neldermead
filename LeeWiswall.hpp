@@ -72,6 +72,7 @@ private:
     void print_simplex();
     void sort_simplex();
     void update(double *vector, int index);
+    void evaluate_all();
     double *simplex, *M, *AR, *AE, *AC;
     double *obj_function_results;
     double rho, xi, gam, sig, fAR, fAE, fAC, best;
@@ -79,8 +80,7 @@ private:
     int dimension;
     int rank, size, current_point;
     int updated;
-    double (*obj_function)(double *vector, int dimension);
-    
+    double (*obj_function)(double *vector, int dimension);  
 };
 
 class IndexSorter {

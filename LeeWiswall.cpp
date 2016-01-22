@@ -73,10 +73,8 @@ LeeWiswall::~LeeWiswall() {
 
 double* LeeWiswall::solve(int max_iterations) {
     
-    //Compute objective function
-    for (int i = 0; i < dimension + 1; i++) {
-        obj_function_results[i] = obj_function(&SIMPLEX(i, 0), dimension);
-    }
+    // Compute objective function for initial values
+    evaluate_all();
     
     sort_simplex(); //Sort the simplex
     best = obj_function_results[indices[0]];
@@ -148,16 +146,16 @@ double* LeeWiswall::solve(int max_iterations) {
         
         int global_updated = 0;
         MPI_Allreduce(&updated, &global_updated, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-        if (!global_updated) { //not one processor had an update, minimize
-            minimize();
-            //Re-eval all of the points
-            for (int i = 0; i < dimension + 1; i++) {
-                obj_function_results[indices[i]] = obj_function(&SIMPLEX(i, 0), dimension);
-            }
+        if (!global_updated) { 
+            minimize(); // every worker computes the same points
+            evaluate_all();
         } else {
             broadcast();
         }
-        sort_simplex(); //Sort the simplex
+        
+        // Sort the simplex
+        sort_simplex(); 
+
         //Find the new best
         best = obj_function_results[indices[0]];
         
@@ -281,4 +279,53 @@ void LeeWiswall::print_simplex() {
 
 void LeeWiswall::sort_simplex() {
     std::sort(indices, indices + dimension + 1, IndexSorter(obj_function_results));
+}
+
+void LeeWiswall::evaluate_all() {
+
+    // how many points per processor?
+    int points_per_proc = (dimension + 1) / size;
+    int rest = (dimension + 1) % size;
+    int point_begin;
+    int point_end;
+    int *recvcounts = new int[size];
+    int *displs = new int[size];
+
+    // compute the number of points that each processor will compute
+    for(int i = 0; i<size; i++) {
+        recvcounts[i] = (dimension + 1) / size;
+        if(i < rest) {
+            recvcounts[i]++;
+        }
+    }
+
+    // compute the corresponding offsets
+    displs[0] = 0;
+    for(int i = 1; i<size; i++) {
+        displs[i] = recvcounts[i-1];
+    }
+    
+    // compute which points THIS processor will compute
+    if(rank < rest) {
+        points_per_proc++;
+        point_begin = points_per_proc * rank;
+        point_end = points_per_proc * (rank+1);
+    } else {
+        point_begin = points_per_proc * rank + rest;
+        point_end = points_per_proc * (rank+1) + rest;
+    }
+        
+    // compute the objective function for this processor
+    double *obj_function_chunk = new double[points_per_proc];
+    int j = 0;
+    for(int i = point_begin; i < point_end; i++) {
+        obj_function_chunk[j++] = obj_function(&SIMPLEX(i, 0), dimension);
+    }
+         
+    // communicate and retrieve results
+    MPI_Allgatherv(obj_function_chunk, points_per_proc, MPI_DOUBLE, &(obj_function_results[indices[0]]), 
+        recvcounts, displs, MPI_DOUBLE,  MPI_COMM_WORLD);
+    
+    delete[] obj_function_chunk;
+
 }
