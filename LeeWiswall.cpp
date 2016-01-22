@@ -302,7 +302,7 @@ void LeeWiswall::evaluate_all() {
     // compute the corresponding offsets
     displs[0] = 0;
     for(int i = 1; i<size; i++) {
-        displs[i] = recvcounts[i-1];
+        displs[i] = recvcounts[i-1] + displs[i-1];
     }
     
     // compute which points THIS processor will compute
