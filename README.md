@@ -1,4 +1,4 @@
-# Parallel Nelder Mead
+# Parallel Nelder-Mead
 
 This repository contains three implementations of the Nelder-Mead optimization algorithm. The implementations are based on
 * Jeff Borggaard's [[Matlab code]](http://people.sc.fsu.edu/~jburkardt/m_src/nelder_mead/nelder_mead.html)
