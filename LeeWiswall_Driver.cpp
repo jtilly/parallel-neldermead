@@ -8,33 +8,33 @@
 #include <cmath>
 #include <iostream>
 #include <mpi.h>
-#include "DistParNelderMead.hpp"
+#include "LeeWiswall.hpp"
 #include "ObjFunction.hpp"
 
 int main(int argc, char **argv) {
     int rank = 0, size = 1;
-    int prob_size = 300, pointsPerIter = 1, max_iterations = -1;
+    int prob_size = 300, max_iterations = -1;
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    if (argc <= 2) {
+    if (argc <= 1) {
         std::cerr << "Error: incorrect usage ./execname <prob_size>"
-        "<points per iter> <max iterations (optional)>\n";
+        "<max iterations (optional)>\n";
         exit(1);
     }
-    if (argc > 3) {
-        max_iterations = atoi(argv[3]);
+    if (argc > 2) {
+        max_iterations = atoi(argv[2]);
     } else {
         max_iterations = -1;
     }
     
     prob_size = atoi(argv[1]);
-    pointsPerIter = atoi(argv[2]);
+    
     double *guess = new double[prob_size];
     for (int i = 0; i < prob_size; i++)
         guess[i] = -1.0;
-    DistParNelderMead *solver = new DistParNelderMead(guess, 1.0, prob_size, objFunction1,
-                                                      rank, size, pointsPerIter);
+    
+    LeeWiswall *solver = new LeeWiswall(guess, 1.0, prob_size, objFunction1, rank, size);
     
     double t1, t2;
     t1 = MPI_Wtime();
@@ -48,7 +48,6 @@ int main(int argc, char **argv) {
         std::cout << answer[prob_size - 1] << std::endl;
     }
     delete solver;
-    delete[] answer;
     MPI_Finalize();
     return 0;
 }
