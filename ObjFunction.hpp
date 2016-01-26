@@ -232,4 +232,16 @@ double objFunction2(double *points, int dimension) {
     return sum;
 }
 
+//  Computes the sum of squares function
+double objFunction3(double *points, int dimension) {
+    
+    double sum = 0;
+    
+    for (int i = 0; i < dimension; ++i) {
+        sum += std::pow(points[i] - (double)i/2.0, 2) / dimension;
+    }
+    
+    return sum;
+}
+
 #endif

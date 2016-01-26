@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < prob_size; i++)
         guess[i] = -1.0;
     
-    NelderMead *solver = new NelderMead(guess, 1.0, prob_size, objFunction1);
+    NelderMead *solver = new NelderMead(guess, 1.0, prob_size, objFunction3);
     
     double *answer = solver->solve(-1);
     for (int i = 0; i < prob_size - 1; i++) {

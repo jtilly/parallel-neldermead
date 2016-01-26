@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < prob_size; i++)
         guess[i] = -1.0;
     
-    LeeWiswall *solver = new LeeWiswall(guess, 1.0, prob_size, objFunction1, rank, size);
+    LeeWiswall *solver = new LeeWiswall(guess, 1.0, prob_size, objFunction3, rank, size);
     
     double t1, t2;
     t1 = MPI_Wtime();

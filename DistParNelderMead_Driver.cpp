@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     double *guess = new double[prob_size];
     for (int i = 0; i < prob_size; i++)
         guess[i] = -1.0;
-    DistParNelderMead *solver = new DistParNelderMead(guess, 1.0, prob_size, objFunction1,
+    DistParNelderMead *solver = new DistParNelderMead(guess, 1.0, prob_size, objFunction3,
                                                       rank, size, pointsPerIter);
     
     double t1, t2;
