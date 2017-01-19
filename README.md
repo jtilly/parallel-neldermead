@@ -1,6 +1,7 @@
 # Parallel Nelder-Mead
+[![Build Status](https://travis-ci.org/jtilly/parallel-neldermead.svg?branch=master)](https://travis-ci.org/jtilly/parallel-neldermead)
 
-This repository contains three implementations of the Nelder-Mead optimization algorithm. The implementations are based on
+This repository contains different implementations of the Nelder-Mead optimization algorithm. The implementations are based on
 * Jeff Borggaard's [[Matlab code]](http://people.sc.fsu.edu/~jburkardt/m_src/nelder_mead/nelder_mead.html)
 * Lee and Wiswall (2007) [[Paper]](http://www.econ.nyu.edu/user/wiswall/research/lee_wiswall_parallel_simplex_edit_2_8_2007.pdf)
 * Klein and Neira (2014) [[Paper]](http://www.cs.ucsb.edu/~kyleklein/publications/neldermead.pdf) [[C++ Code]](https://dl.dropboxusercontent.com/u/17629709/Klein_Neira_code.zip)
@@ -15,14 +16,14 @@ make tests
 ./tests.out
 ```
 
-Build and run the Lee and Wiswall implementation:
+Build and run the parallel Lee and Wiswall implementation:
 ```{shell}
 # build and run a simple example
 make leewiswall  
 mpirun -np <num_proc> ./LeeWiswall.out <problem_size>
 ```
 
-Build and run the Klein and Neira implementation:
+Build and run the parallel Klein and Neira implementation (this doesn't really work):
 ```{shell}
 # build and run a simple example
 make parallel 

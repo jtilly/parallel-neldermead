@@ -1,0 +1,21 @@
+language: cpp
+sudo: false
+branches:
+  only:
+   - master
+
+addons:
+  apt:
+    packages:
+    - openmpi-bin
+    - libopenmpi-dev
+
+install:
+  - make 
+
+script:
+  - ./tests.out
+  - ./LeeWiswall.out 8
+  - mpirun -np 2 ./LeeWiswall.out 8
+  - ./DistParNelderTest.out 4 2 200
+  - mpirun -np 2 ./DistParNelderTest.out 4 2 200
