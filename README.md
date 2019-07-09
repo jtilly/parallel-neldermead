@@ -4,7 +4,7 @@
 This repository contains different implementations of the Nelder-Mead optimization algorithm. The implementations are based on
 * Jeff Borggaard's [[Matlab code]](http://people.sc.fsu.edu/~jburkardt/m_src/nelder_mead/nelder_mead.html)
 * Lee and Wiswall (2007) [[Paper]](http://www.econ.nyu.edu/user/wiswall/research/lee_wiswall_parallel_simplex_edit_2_8_2007.pdf)
-* Klein and Neira (2014) [[Paper]](http://www.cs.ucsb.edu/~kyleklein/publications/neldermead.pdf) [[C++ Code]](https://dl.dropboxusercontent.com/u/17629709/Klein_Neira_code.zip)
+* Klein and Neira (2014) [[Paper]](https://www.dropbox.com/s/5zw70tgueot3s4r/Klein_Neira.pdf) [[C++ Code]](  https://www.dropbox.com/s/z8gpwkszy0u5wz6/Klein_Neira_code.zip?dl=1)
 
 Build and run the serial algorithm:
 ```{shell}
